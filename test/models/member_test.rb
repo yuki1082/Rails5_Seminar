@@ -26,7 +26,6 @@ class MemberTest < ActiveSupport::TestCase
     assert_equal 0, members.length
   end
 
-
   test "seach full_name is x-ab" do
     members = Member.search("x-ab")
     assert_equal 2, members.length
@@ -35,6 +34,12 @@ class MemberTest < ActiveSupport::TestCase
       assert_equal target_name[idx] , member.name
     end
   end
+
+  test "authenticate" do 
+    member = FactoryGirl.create(:member, name: "taro", password: "happy", password_confirmation: "happy", number:6)
+    assert_nil Member.authenticate("taro", "lucky")
+    assert_equal member, Member.authenticate("taro", "happy")
+  end 
 
 
 

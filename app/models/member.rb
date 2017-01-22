@@ -1,6 +1,5 @@
 class Member < ActiveRecord::Base
   include EmailAddressChecker
-
   validates :number, presence: true,
     numericality: { only_integer: true,
                     greater_than: 0, less_than: 100, allow_blank: true },
@@ -11,7 +10,16 @@ class Member < ActiveRecord::Base
     length: { minimum: 2, maximum: 20, allow_blank: true },
     uniqueness: { case_sensitive: false }
   validates :full_name, length: { maximum: 20 }
+  validates :password, presence: { on: :create }, confirmation: { allow_blank: true }
   validate :check_email
+
+  attr_accessor :password, :password_confirmation
+  def password=(val)
+    if val.present?
+      self.hashed_password = BCrypt::Password.create(val)
+    end
+    @password = val
+  end
 
   private
   def check_email
@@ -34,5 +42,16 @@ class Member < ActiveRecord::Base
       end
       rel
     end
+
+    def authenticate(name, password)
+      member = Member.find_by(name: name)
+      if member && member.hashed_password.present? &&
+          BCrypt::Password.new(member.hashed_password) == password
+        member
+      else
+        nil
+      end
+    end
   end
+
 end

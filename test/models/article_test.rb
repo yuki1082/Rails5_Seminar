@@ -38,18 +38,33 @@ class ArticleTest < ActiveSupport::TestCase
   # openスコープのチェック
   test "open" do
     article1 = FactoryGirl.create(:article, title: "現在",
-      released_at: 1.day.ago, expired_at: 1.day.from_now)
+                                  released_at: 1.day.ago, expired_at: 1.day.from_now)
     article2 = FactoryGirl.create(:article, title: "過去",
-      released_at: 2.days.ago, expired_at: 1.day.ago)
+                                  released_at: 2.days.ago, expired_at: 1.day.ago)
     article3 = FactoryGirl.create(:article, title: "未来",
-      released_at: 1.day.from_now, expired_at: 2.days.from_now)
+                                  released_at: 1.day.from_now, expired_at: 2.days.from_now)
     article4 = FactoryGirl.create(:article, title: "終了日なし",
-      released_at: 1.day.ago, expired_at: nil)
+                                  released_at: 1.day.ago, expired_at: nil)
 
     articles = Article.open
     assert_includes articles, article1, "現在の記事が含まれる"
     refute_includes articles, article2, "過去の記事は含まれない"
     refute_includes articles, article3, "未来の記事は含まれない"
     assert_includes articles, article4, "expiredがnilの場合"
+  end
+
+  #readable_forスコープのチェック
+  test "readable_for" do
+    article_1 = FactoryGirl.create(:article)
+    article_2 = FactoryGirl.create(:article, member_only: true)
+
+    articles = Article.readable_for(nil)
+    assert_includes articles, article_1
+    refute_includes articles, article_2
+
+    articles = Article.readable_for(FactoryGirl.create(:member))
+    assert_includes articles, article_1
+    assert_includes articles, article_2
+
   end
 end
